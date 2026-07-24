@@ -25,12 +25,12 @@ scaling: f32 = 1.0
 charsize_w_px, charsize_h_px: i32
 
 sdl_init :: proc() -> bool {
-	SDL.SetHint(SDL.HINT_VIDEO_DOUBLE_BUFFER, cstring("1"))
 
 	if wayland_display, ok := os.lookup_env_alloc("WAYLAND_DISPLAY", context.allocator);
 	   ok && wayland_display != "" {
 		os.set_env("SDL_VIDEODRIVER", "wayland")
 	}
+	SDL.SetHint(SDL.HINT_VIDEO_DOUBLE_BUFFER, cstring("1"))
 	if sdl_res := SDL.Init(SDL.INIT_VIDEO); sdl_res != true {
 		log.errorf("failed to SDL3.Init: %v.\n", sdl_res)
 		return false
@@ -89,6 +89,7 @@ poll_input :: proc() {
 		case .QUIT:
 			ctx.should_close = true
 		case .TEXT_INPUT:
+			fmt.print(e.text.text)
 			bd := &all_tboxes[0].builder
 			strings.write_string(bd, string(e.text.text))
 		case .KEY_DOWN:
@@ -187,7 +188,7 @@ main :: proc() {
 		poll_input()
 		update()
 		draw()
-		SDL.Delay(16)
+		SDL.Delay(1)
 	}
 
 	SDL.DestroyWindow(ctx.window)
