@@ -5,6 +5,7 @@ package editre
 import "core:fmt"
 import "core:log"
 import "core:os"
+import "core:strings"
 import SDL "vendor:sdl3"
 import TTF "vendor:sdl3/ttf"
 
@@ -21,8 +22,11 @@ FONTS :: [4]^TTF.Font
 fonts := FONTS{}
 scaling: f32 = 1.0
 
+charsize_w_px, charsize_h_px: i32
 
 sdl_init :: proc() -> bool {
+	SDL.SetHint(SDL.HINT_VIDEO_DOUBLE_BUFFER, cstring("1"))
+
 	if wayland_display, ok := os.lookup_env_alloc("WAYLAND_DISPLAY", context.allocator);
 	   ok && wayland_display != "" {
 		os.set_env("SDL_VIDEODRIVER", "wayland")
@@ -55,10 +59,7 @@ sdl_init :: proc() -> bool {
 
 	base_path := SDL.GetBasePath()
 	full_path := fmt.ctprint(base_path, cstring("res/Incon.ttf"), sep = "")
-	log.infof("SDL base path: %s", base_path)
-
 	scaling = SDL.GetWindowDisplayScale(ctx.window)
-
 	base_pt: f32 = 12.0
 	for &ft in fonts {
 		ft = TTF.OpenFont(full_path, base_pt * scaling)
@@ -71,6 +72,12 @@ sdl_init :: proc() -> bool {
 		base_pt += 4
 	}
 
+	txx := TTF.CreateText(ctx.text_engine, fonts[2], cstring("@"), 1)
+	// =======================
+	TTF.GetTextSize(txx, &charsize_w_px, &charsize_h_px)
+
+	_ = SDL.StartTextInput(ctx.window)
+
 	return true
 }
 
@@ -82,8 +89,13 @@ poll_input :: proc() {
 		case .QUIT:
 			ctx.should_close = true
 		case .TEXT_INPUT:
-
+			bd := &all_tboxes[0].builder
+			strings.write_string(bd, string(e.text.text))
 		case .KEY_DOWN:
+			if e.key.scancode == .BACKSPACE {
+				bd := &all_tboxes[0].builder
+				strings.pop_rune(bd)
+			}
 			if .LCTRL in e.key.mod || .RCTRL in e.key.mod {
 				#partial switch (e.key.scancode) {
 				case .C:
@@ -107,9 +119,7 @@ frame := 0
 update :: proc() {
 
 	frame += 1
-	if frame == 37 {
-		_ = SDL.StartTextInput(ctx.window)
-
+	if frame == -1 {
 		log.info("trying to openfolderdialog")
 		SDL.ShowOpenFolderDialog(dialog_cbk, nil, ctx.window, cstring("."), false)
 		err := SDL.GetError()
@@ -128,20 +138,34 @@ draw :: proc() {
 		SDL.SetRenderDrawColor(ctx.renderer, 12, 12, 12, 0xff)
 		SDL.RenderFillRect(ctx.renderer, &frxx)
 	}
-	t1 := TTF.CreateText(ctx.text_engine, fonts[0], cstring("hellow worl"), 11)
-	TTF.SetTextColor(t1, 0, 0, 0, 255)
+	// t1 := TTF.CreateText(ctx.text_engine, fonts[0], cstring("hellow worl"), 11)
+	// TTF.SetTextColor(t1, 0, 0, 0, 255)
 
-	_ = TTF.DrawRendererText(t1, 0, 0)
+	// _ = TTF.DrawRendererText(t1, 0, 0)
 
-	t2 := TTF.CreateText(
-		ctx.text_engine,
-		fonts[2],
-		cstring(
-			"lorem ipsum dolor sit amet\nPublic Static Void Main...\nI haven't heard that name in some time.",
-		),
-		93,
-	)
-	_ = TTF.DrawRendererText(t2, 0, 50)
+	// t2 := TTF.CreateText(
+	// 	ctx.text_engine,
+	// 	fonts[2],
+	// 	cstring(
+	// 		"lorem ipsum dolor sit amet\nPublic Static Void Main...\nI haven't heard that name in some time.",
+	// 	),
+	// 	93,
+	// )
+	// _ = TTF.DrawRendererText(t2, 0, 50)
+
+	for tb in all_tboxes {
+		outline := SDL.FRect {
+			f32(tb.x - 1),
+			f32(tb.y - 1),
+			f32(charsize_w_px * i32(tb.w_chars) + 1),
+			f32(charsize_h_px * i32(tb.h_chars) + 1),
+		}
+		SDL.RenderRect(ctx.renderer, &outline)
+	}
+
+	cs := strings.to_cstring(&all_tboxes[0].builder)
+	tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
+	_ = TTF.DrawRendererText(tn, f32(all_tboxes[0].x), f32(all_tboxes[0].y))
 
 	SDL.RenderPresent(ctx.renderer)
 }
@@ -156,6 +180,8 @@ main :: proc() {
 	}
 
 	add_rect(55, 59, 75, 79)
+	add_tbox(300, 300, 10, 2)
+	all_tboxes[0].focused = true
 
 	for !ctx.should_close {
 		poll_input()
