@@ -15,7 +15,6 @@ CTX :: struct {
 	surface:      ^SDL.Surface,
 	renderer:     ^SDL.Renderer,
 	text_engine:  ^TTF.TextEngine,
-	logger:       ^log.Logger,
 	should_close: bool,
 }
 ctx := CTX{}
@@ -89,25 +88,15 @@ poll_input :: proc() {
 		#partial switch (e.type) {
 		case .QUIT:
 			ctx.should_close = true
+		case .MOUSE_WHEEL:
+
 		case .TEXT_INPUT:
-			fmt.print(e.text.text)
 			bd := &all_tboxes[0].builder
 			strings.write_string(bd, string(e.text.text))
 		case .KEY_DOWN:
-			if e.key.scancode == .BACKSPACE {
-				bd := &all_tboxes[0].builder
-				strings.pop_rune(bd)
-			}
-			if .LCTRL in e.key.mod || .RCTRL in e.key.mod {
-				#partial switch (e.key.scancode) {
-				case .C:
-					log.info("ctrl c!")
-				}
-			}
-
-			#partial switch (e.key.scancode) {
-			case .ESCAPE:
-				ctx.should_close = true
+			handled := dispatch_to_keybind(e.key.mod, e.key.scancode)
+			if !handled {
+				log.warn("keybind not mapped: ", e.key.mod, e.key.scancode)
 			}
 		}
 	}
@@ -130,7 +119,7 @@ update :: proc() {
 }
 
 draw :: proc() {
-	SDL.SetRenderDrawColor(ctx.renderer, 12, 17, 35, 0xff)
+	SDL.SetRenderDrawColor(ctx.renderer, 12, 17, 23, 0xff)
 	SDL.RenderClear(ctx.renderer)
 
 	for i in 0 ..< len(drawlists.rects) {
@@ -176,7 +165,7 @@ main :: proc() {
 	add_tbox(5, 5, 10, 2)
 	all_tboxes[0].focused = true
 
-	fptr, err := read_file("main1.odin")
+	fptr, err := read_file("main.odin")
 	_ = fptr
 	if err != nil {
 		log.error("some error in read_file.")
