@@ -15,6 +15,7 @@ CTX :: struct {
 	surface:      ^SDL.Surface,
 	renderer:     ^SDL.Renderer,
 	text_engine:  ^TTF.TextEngine,
+	logger:       ^log.Logger,
 	should_close: bool,
 }
 ctx := CTX{}
@@ -129,7 +130,7 @@ update :: proc() {
 }
 
 draw :: proc() {
-	SDL.SetRenderDrawColor(ctx.renderer, 175, 77, 27, 0xff)
+	SDL.SetRenderDrawColor(ctx.renderer, 12, 17, 35, 0xff)
 	SDL.RenderClear(ctx.renderer)
 
 	for i in 0 ..< len(drawlists.rects) {
@@ -139,20 +140,6 @@ draw :: proc() {
 		SDL.SetRenderDrawColor(ctx.renderer, 12, 12, 12, 0xff)
 		SDL.RenderFillRect(ctx.renderer, &frxx)
 	}
-	// t1 := TTF.CreateText(ctx.text_engine, fonts[0], cstring("hellow worl"), 11)
-	// TTF.SetTextColor(t1, 0, 0, 0, 255)
-
-	// _ = TTF.DrawRendererText(t1, 0, 0)
-
-	// t2 := TTF.CreateText(
-	// 	ctx.text_engine,
-	// 	fonts[2],
-	// 	cstring(
-	// 		"lorem ipsum dolor sit amet\nPublic Static Void Main...\nI haven't heard that name in some time.",
-	// 	),
-	// 	93,
-	// )
-	// _ = TTF.DrawRendererText(t2, 0, 50)
 
 	for tb in all_tboxes {
 		outline := SDL.FRect {
@@ -168,26 +155,40 @@ draw :: proc() {
 	tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
 	_ = TTF.DrawRendererText(tn, f32(all_tboxes[0].x), f32(all_tboxes[0].y))
 
+	// line := fptr[0]
+	// line_cstr := strings.to_cstring(&line.builder)
+	// tn := TTF.CreateText(ctx.text_engine, fonts[1], line_cstr, len(line_cstr))
+	// _ = TTF.DrawRendererText(tn, 5, 50)
+
 	SDL.RenderPresent(ctx.renderer)
 }
 
 main :: proc() {
 	context.logger = log.create_console_logger()
-
 	log.info("hello world, from the logger!")
+
 	if !sdl_init() {
 		log.error("failed init :0\n")
 		os.exit(1)
 	}
 
 	add_rect(55, 59, 75, 79)
-	add_tbox(300, 300, 10, 2)
+	add_tbox(5, 5, 10, 2)
 	all_tboxes[0].focused = true
+
+	fptr, err := read_file("main1.odin")
+	_ = fptr
+	if err != nil {
+		log.error("some error in read_file.")
+		log.error(err)
+		os.exit(1)
+	}
 
 	for !ctx.should_close {
 		poll_input()
 		update()
 		draw()
+
 		SDL.Delay(1)
 	}
 
