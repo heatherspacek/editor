@@ -3,17 +3,17 @@ package editre
 import "core:strings"
 
 tbox :: struct {
-	x:         int,
-	y:         int,
-	w_chars:   int,
-	h_chars:   int,
+	x:         u16,
+	y:         u16,
+	w_chars:   u16,
+	h_chars:   u16,
 	focused:   bool,
-	cursorpos: int,
+	cursorpos: u16,
 	builder:   strings.Builder,
 }
 all_tboxes := [dynamic]tbox{}
 
-add_tbox :: proc(x: int, y: int, w: int, h: int) {
+add_tbox :: proc(x: u16, y: u16, w: u16, h: u16) {
 	base_tbox := tbox{}
 	base_tbox.x = x
 	base_tbox.y = y

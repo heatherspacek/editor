@@ -9,7 +9,6 @@ import "core:strings"
 import SDL "vendor:sdl3"
 import TTF "vendor:sdl3/ttf"
 
-
 CTX :: struct {
 	window:       ^SDL.Window,
 	surface:      ^SDL.Surface,
@@ -21,6 +20,9 @@ ctx := CTX{}
 FONTS :: [4]^TTF.Font
 fonts := FONTS{}
 scaling: f32 = 1.0
+
+application_w: i32 = 640
+application_h: i32 = 420
 
 charsize_w_px, charsize_h_px: i32
 
@@ -35,7 +37,12 @@ sdl_init :: proc() -> bool {
 		log.errorf("failed to SDL3.Init: %v.\n", sdl_res)
 		return false
 	}
-	ctx.window = SDL.CreateWindow("hw", 600, 400, {.HIGH_PIXEL_DENSITY, .RESIZABLE})
+	ctx.window = SDL.CreateWindow(
+		"hw",
+		application_w,
+		application_h,
+		{.HIGH_PIXEL_DENSITY, .RESIZABLE},
+	)
 	if ctx.window == nil {
 		log.errorf("CreateWindow failed.\n")
 		return false
@@ -102,20 +109,9 @@ poll_input :: proc() {
 	}
 }
 
-dialog_cbk :: proc "c" (_: rawptr, _: [^]cstring, _: i32) {
-
-}
-
 frame := 0
 update :: proc() {
-
 	frame += 1
-	if frame == -1 {
-		log.info("trying to openfolderdialog")
-		SDL.ShowOpenFolderDialog(dialog_cbk, nil, ctx.window, cstring("."), false)
-		err := SDL.GetError()
-		log.error(err)
-	}
 }
 
 draw :: proc() {
@@ -130,12 +126,15 @@ draw :: proc() {
 		SDL.RenderFillRect(ctx.renderer, &frxx)
 	}
 
+	SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 200, 0xff)
 	for tb in all_tboxes {
 		outline := SDL.FRect {
 			f32(tb.x - 1),
 			f32(tb.y - 1),
-			f32(charsize_w_px * i32(tb.w_chars) + 1),
-			f32(charsize_h_px * i32(tb.h_chars) + 1),
+			// f32(charsize_w_px * i32(tb.w_chars) + 1),
+			// f32(charsize_h_px * i32(tb.h_chars) + 1),
+			f32(tb.w_chars - 1),
+			f32(tb.h_chars - 1),
 		}
 		SDL.RenderRect(ctx.renderer, &outline)
 	}
@@ -143,11 +142,6 @@ draw :: proc() {
 	cs := strings.to_cstring(&all_tboxes[0].builder)
 	tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
 	_ = TTF.DrawRendererText(tn, f32(all_tboxes[0].x), f32(all_tboxes[0].y))
-
-	// line := fptr[0]
-	// line_cstr := strings.to_cstring(&line.builder)
-	// tn := TTF.CreateText(ctx.text_engine, fonts[1], line_cstr, len(line_cstr))
-	// _ = TTF.DrawRendererText(tn, 5, 50)
 
 	SDL.RenderPresent(ctx.renderer)
 }
@@ -165,19 +159,10 @@ main :: proc() {
 	add_tbox(5, 5, 10, 2)
 	all_tboxes[0].focused = true
 
-	fptr, err := read_file("main.odin")
-	_ = fptr
-	if err != nil {
-		log.error("some error in read_file.")
-		log.error(err)
-		os.exit(1)
-	}
-
 	for !ctx.should_close {
 		poll_input()
 		update()
 		draw()
-
 		SDL.Delay(1)
 	}
 

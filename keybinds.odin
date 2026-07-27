@@ -25,9 +25,16 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (hendled: bo
 			log.info("imagine we cleared the line. (^U)")
 			return true
 		case .O:
-			SDL.ShowOpenFolderDialog(dialog_cbk, nil, ctx.window, cstring("."), false)
-			err := SDL.GetError()
-			log.error(err)
+			// SDL.ShowOpenFolderDialog(dialog_cbk, nil, ctx.window, cstring("."), false)
+			SDL.ShowOpenFileDialog(
+				open_file_cbk,
+				nil,
+				ctx.window,
+				nil,
+				0,
+				SDL.GetBasePath(),
+				false,
+			)
 
 		}
 	}
