@@ -95,6 +95,13 @@ poll_input :: proc() {
 		#partial switch (e.type) {
 		case .QUIT:
 			ctx.should_close = true
+		case .WINDOW_RESIZED:
+			w, h: i32
+			SDL.GetWindowSizeInPixels(ctx.window, &w, &h)
+			application_h = h
+			application_w = w
+			log.info("h: ", application_h)
+			log.info("w: ", application_w)
 		case .MOUSE_WHEEL:
 
 		case .TEXT_INPUT:

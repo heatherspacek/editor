@@ -54,6 +54,5 @@ open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 	for panel_rect in new_layout {
 		add_tbox(panel_rect[0], panel_rect[1], panel_rect[2], panel_rect[3])
 	}
-	fmt.print(all_tboxes)
 
 }
