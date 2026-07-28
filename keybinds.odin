@@ -35,7 +35,14 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (hendled: bo
 				SDL.GetBasePath(),
 				false,
 			)
-
+		case .TAB:
+			for &tb, i in all_tboxes {
+				if tb.focused {
+					tb.focused = false
+					all_tboxes[(i + 1) % len(all_tboxes)].focused = true
+					break
+				}
+			}
 		}
 	}
 

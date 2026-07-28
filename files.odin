@@ -53,6 +53,13 @@ open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 	clear(&all_tboxes)
 	for panel_rect in new_layout {
 		add_tbox(panel_rect[0], panel_rect[1], panel_rect[2], panel_rect[3])
+		// TODO: layout procedure leaks memory right now. derp.
+	}
+	for &tb, i in all_tboxes {
+		tb.focused = false
+		if i == len(all_tboxes) - 1 {
+			tb.focused = true
+		}
 	}
 
 }

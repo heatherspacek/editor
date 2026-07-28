@@ -133,7 +133,7 @@ draw :: proc() {
 		SDL.RenderFillRect(ctx.renderer, &frxx)
 	}
 
-	SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 200, 0xff)
+	// SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 200, 0xff)
 	for tb in all_tboxes {
 		outline := SDL.FRect {
 			f32(tb.x - 1),
@@ -143,12 +143,18 @@ draw :: proc() {
 			f32(tb.w_chars - 1),
 			f32(tb.h_chars - 1),
 		}
+
+		if tb.focused {
+			SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 220, 0xff)
+		} else {
+			SDL.SetRenderDrawColor(ctx.renderer, 80, 80, 90, 0xff)
+		}
 		SDL.RenderRect(ctx.renderer, &outline)
 	}
 
-	cs := strings.to_cstring(&all_tboxes[0].builder)
-	tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
-	_ = TTF.DrawRendererText(tn, f32(all_tboxes[0].x), f32(all_tboxes[0].y))
+	// cs := strings.to_cstring(&all_tboxes[0].builder)
+	// tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
+	// _ = TTF.DrawRendererText(tn, f32(all_tboxes[0].x), f32(all_tboxes[0].y))
 
 	SDL.RenderPresent(ctx.renderer)
 }
