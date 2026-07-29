@@ -100,8 +100,8 @@ poll_input :: proc() {
 			SDL.GetWindowSizeInPixels(ctx.window, &w, &h)
 			application_h = h
 			application_w = w
-			log.info("h: ", application_h)
-			log.info("w: ", application_w)
+		case .DROP_FILE:
+		// :0
 		case .MOUSE_WHEEL:
 
 		case .TEXT_INPUT:
