@@ -160,6 +160,7 @@ draw :: proc() {
 				cs := strings.to_cstring(&line.builder)
 				tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
 				_ = TTF.DrawRendererText(tn, f32(tb.x), f32(int(tb.y) + (25 * line_i)))
+				TTF.DestroyText(tn)
 			}
 		}
 
