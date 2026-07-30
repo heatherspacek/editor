@@ -43,8 +43,30 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (hendled: bo
 					break
 				}
 			}
+			return true
+		case .EQUALS:
+			// font size up
+			panel := get_focused_panel()
+			curr_size := panel.font_i
+			if curr_size == N_FONTS_LOADED - 1 {
+				log.warn("tried to increase font size past max")
+			} else {
+				panel.font_i += 1
+				fontchange_panel(panel, fonts[panel.font_i])
+			}
+			return true
+		case .MINUS:
+			// font size down
+			panel := get_focused_panel()
+			curr_size := panel.font_i
+			if curr_size == 0 {
+				log.warn("tried to decrease font size below min")
+			} else {
+				panel.font_i -= 1
+				fontchange_panel(panel, fonts[panel.font_i])
+			}
+			return true
 		}
 	}
-
 	return false
 }

@@ -17,7 +17,8 @@ CTX :: struct {
 	should_close: bool,
 }
 ctx := CTX{}
-FONTS :: [4]^TTF.Font
+N_FONTS_LOADED :: 12
+FONTS :: [N_FONTS_LOADED]^TTF.Font
 fonts := FONTS{}
 scaling: f32 = 1.0
 
@@ -67,7 +68,7 @@ sdl_init :: proc() -> bool {
 	base_path := SDL.GetBasePath()
 	full_path := fmt.ctprint(base_path, cstring("res/Incon.ttf"), sep = "")
 	scaling = SDL.GetWindowDisplayScale(ctx.window)
-	base_pt: f32 = 12.0
+	base_pt: f32 = 8.0
 	for &ft in fonts {
 		ft = TTF.OpenFont(full_path, base_pt * scaling)
 		if ft == nil {
@@ -76,7 +77,7 @@ sdl_init :: proc() -> bool {
 			return false
 		}
 		TTF.SetFontHinting(ft, .LIGHT_SUBPIXEL)
-		base_pt += 4
+		base_pt += 2
 	}
 
 	txx := TTF.CreateText(ctx.text_engine, fonts[2], cstring("@"), 1)
@@ -157,21 +158,14 @@ draw :: proc() {
 	}
 
 	SDL.RenderPresent(ctx.renderer)
-	// cs := strings.to_cstring(&all_tboxes[0].builder)
-	// tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
-	// _ = TTF.DrawRendererText(tn, f32(all_tboxes[0].x), f32(all_tboxes[0].y))
-
 }
 
 main :: proc() {
 	context.logger = log.create_console_logger()
-	log.info("hello world, from the logger!")
-
 	if !sdl_init() {
-		log.error("failed init :0\n")
+		log.error("Init failed somewhere. Check logs. Exiting...\n")
 		os.exit(1)
 	}
-
 	for !ctx.should_close {
 		e: SDL.Event
 		if SDL.WaitEventTimeout(&e, 500) {

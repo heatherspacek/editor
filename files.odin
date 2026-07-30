@@ -48,10 +48,11 @@ open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 	contents, err := read_file(string(selection[0]))
 	append_elem(&all_open_files, contents)
 
+	// TODO (easy): move this to panels.odin
 	new_panel := new(Panel)
 	new_panel.file = contents
 	new_panel.focused = true
-	new_panel.font = fonts[2]
+	new_panel.font_i = 3
 	populate_panel(new_panel)
 
 	// LAYOUTING
