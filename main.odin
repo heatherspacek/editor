@@ -100,6 +100,7 @@ poll_input :: proc() {
 			SDL.GetWindowSizeInPixels(ctx.window, &w, &h)
 			application_h = h
 			application_w = w
+
 		case .DROP_FILE:
 		// :0
 		case .MOUSE_WHEEL:
@@ -134,7 +135,7 @@ draw :: proc() {
 	}
 
 	// SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 200, 0xff)
-	for tb in all_tboxes {
+	for tb, i in all_tboxes {
 		outline := SDL.FRect {
 			f32(tb.x - 1),
 			f32(tb.y - 1),
@@ -150,6 +151,18 @@ draw :: proc() {
 			SDL.SetRenderDrawColor(ctx.renderer, 80, 80, 90, 0xff)
 		}
 		SDL.RenderRect(ctx.renderer, &outline)
+
+		// silly oversight: datastructs are disconnected (all_tboxes, all_open_files)
+
+		if len(all_open_files) > 0 {
+			fcontents := all_open_files[i]
+			for &line, line_i in fcontents {
+				cs := strings.to_cstring(&line.builder)
+				tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
+				_ = TTF.DrawRendererText(tn, f32(tb.x), f32(int(tb.y) + (25 * line_i)))
+			}
+		}
+
 	}
 
 	// cs := strings.to_cstring(&all_tboxes[0].builder)
