@@ -48,18 +48,21 @@ open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 	contents, err := read_file(string(selection[0]))
 	append_elem(&all_open_files, contents)
 
-	// trigger adjusting layout of tboxes ("panels")
-	new_layout := panels_layout(len(all_open_files))
-	clear(&all_tboxes)
-	for panel_rect in new_layout {
-		add_tbox(panel_rect[0], panel_rect[1], panel_rect[2], panel_rect[3])
-		// TODO: layout procedure leaks memory right now. derp.
-	}
-	for &tb, i in all_tboxes {
-		tb.focused = false
-		if i == len(all_tboxes) - 1 {
-			tb.focused = true
-		}
+	new_panel := new(Panel)
+	new_panel.file = contents
+	new_panel.focused = true
+	new_panel.font = fonts[2]
+	populate_panel(new_panel)
+
+	// LAYOUTING
+	n_panels := len(all_open_files)
+	ret := make([]Rect, n_panels)
+	defer delete(ret)
+	new_layout := panels_layout(n_panels, ret)
+
+	append_elem(&all_panels, new_panel^)
+	for &p, i in all_panels {
+		p.screen_pos = new_layout[i]
 	}
 
 }

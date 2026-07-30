@@ -5,7 +5,7 @@ package editre
 import "core:fmt"
 import "core:log"
 import "core:os"
-import "core:strings"
+// import "core:strings"
 import SDL "vendor:sdl3"
 import TTF "vendor:sdl3/ttf"
 
@@ -27,7 +27,6 @@ application_h: i32 = 420
 charsize_w_px, charsize_h_px: i32
 
 sdl_init :: proc() -> bool {
-
 	if wayland_display, ok := os.lookup_env_alloc("WAYLAND_DISPLAY", context.allocator);
 	   ok && wayland_display != "" {
 		os.set_env("SDL_VIDEODRIVER", "wayland")
@@ -38,7 +37,7 @@ sdl_init :: proc() -> bool {
 		return false
 	}
 	ctx.window = SDL.CreateWindow(
-		"hw",
+		"editre",
 		application_w,
 		application_h,
 		{.HIGH_PIXEL_DENSITY, .RESIZABLE},
@@ -53,6 +52,7 @@ sdl_init :: proc() -> bool {
 		log.errorf("CreateRenderer failed.\n")
 		return false
 	}
+	SDL.SetRenderVSync(ctx.renderer, 1)
 
 	if ttf_res := TTF.Init(); ttf_res != true {
 		log.errorf("failed to TTF.Init: %v.\n", ttf_res)
@@ -88,89 +88,79 @@ sdl_init :: proc() -> bool {
 	return true
 }
 
-poll_input :: proc() {
-	e: SDL.Event
+handle_event :: proc(e: ^SDL.Event) {
+	#partial switch (e.type) {
+	case .QUIT:
+		ctx.should_close = true
+	case .WINDOW_RESIZED:
+		w, h: i32
+		SDL.GetWindowSizeInPixels(ctx.window, &w, &h)
+		application_h = h
+		application_w = w
 
-	for SDL.PollEvent(&e) {
-		#partial switch (e.type) {
-		case .QUIT:
-			ctx.should_close = true
-		case .WINDOW_RESIZED:
-			w, h: i32
-			SDL.GetWindowSizeInPixels(ctx.window, &w, &h)
-			application_h = h
-			application_w = w
-
-		case .DROP_FILE:
-		// :0
-		case .MOUSE_WHEEL:
-
-		case .TEXT_INPUT:
-			bd := &all_tboxes[0].builder
-			strings.write_string(bd, string(e.text.text))
-		case .KEY_DOWN:
-			handled := dispatch_to_keybind(e.key.mod, e.key.scancode)
-			if !handled {
-				log.warn("keybind not mapped: ", e.key.mod, e.key.scancode)
-			}
+	case .DROP_FILE:
+	// :0
+	case .MOUSE_WHEEL:
+		p := get_focused_panel()
+		p.scroll_pos += 1
+	case .TEXT_INPUT:
+	// bd := &all_tboxes[0].builder
+	// strings.write_string(bd, string(e.text.text))
+	case .KEY_DOWN:
+		handled := dispatch_to_keybind(e.key.mod, e.key.scancode)
+		if !handled {
+			log.warn("keybind not mapped: ", e.key.mod, e.key.scancode)
 		}
 	}
 }
 
 frame := 0
 update :: proc() {
-	frame += 1
 }
 
 draw :: proc() {
+
 	SDL.SetRenderDrawColor(ctx.renderer, 12, 17, 23, 0xff)
 	SDL.RenderClear(ctx.renderer)
 
-	for i in 0 ..< len(drawlists.rects) {
-		rxx := drawlists.rects[i]
-		frxx := SDL.FRect{}
-		SDL.RectToFRect(rxx, &frxx)
-		SDL.SetRenderDrawColor(ctx.renderer, 12, 12, 12, 0xff)
-		SDL.RenderFillRect(ctx.renderer, &frxx)
+	// for tb, i in all_tboxes {
+	// 	outline := SDL.FRect {
+	// 		f32(tb.x - 1),
+	// 		f32(tb.y - 1),
+	// 		// f32(charsize_w_px * i32(tb.w_chars) + 1),
+	// 		// f32(charsize_h_px * i32(tb.h_chars) + 1),
+	// 		f32(tb.w_chars - 1),
+	// 		f32(tb.h_chars - 1),
+	// 	}
+
+	// 	if tb.focused {
+	// 		SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 220, 0xff)
+	// 	} else {
+	// 		SDL.SetRenderDrawColor(ctx.renderer, 80, 80, 90, 0xff)
+	// 	}
+	// 	SDL.RenderRect(ctx.renderer, &outline)
+
+	// 	// silly oversight: datastructs are disconnected (all_tboxes, all_open_files)
+	// 	// also need a VIEWPORT concept???
+	// 	if len(all_open_files) > 0 {
+	// 		fcontents := all_open_files[i]
+	// 		for &line, line_i in fcontents {
+	// 			cs := strings.to_cstring(&line.builder)
+	// 			tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
+	// 			_ = TTF.DrawRendererText(tn, f32(tb.x), f32(int(tb.y) + (25 * line_i)))
+	// 			TTF.DestroyText(tn)
+	// 		}
+	// 	}
+
+	for &panel in all_panels {
+		draw_panel(&panel)
 	}
 
-	// SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 200, 0xff)
-	for tb, i in all_tboxes {
-		outline := SDL.FRect {
-			f32(tb.x - 1),
-			f32(tb.y - 1),
-			// f32(charsize_w_px * i32(tb.w_chars) + 1),
-			// f32(charsize_h_px * i32(tb.h_chars) + 1),
-			f32(tb.w_chars - 1),
-			f32(tb.h_chars - 1),
-		}
-
-		if tb.focused {
-			SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 220, 0xff)
-		} else {
-			SDL.SetRenderDrawColor(ctx.renderer, 80, 80, 90, 0xff)
-		}
-		SDL.RenderRect(ctx.renderer, &outline)
-
-		// silly oversight: datastructs are disconnected (all_tboxes, all_open_files)
-
-		if len(all_open_files) > 0 {
-			fcontents := all_open_files[i]
-			for &line, line_i in fcontents {
-				cs := strings.to_cstring(&line.builder)
-				tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
-				_ = TTF.DrawRendererText(tn, f32(tb.x), f32(int(tb.y) + (25 * line_i)))
-				TTF.DestroyText(tn)
-			}
-		}
-
-	}
-
+	SDL.RenderPresent(ctx.renderer)
 	// cs := strings.to_cstring(&all_tboxes[0].builder)
 	// tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
 	// _ = TTF.DrawRendererText(tn, f32(all_tboxes[0].x), f32(all_tboxes[0].y))
 
-	SDL.RenderPresent(ctx.renderer)
 }
 
 main :: proc() {
@@ -182,15 +172,13 @@ main :: proc() {
 		os.exit(1)
 	}
 
-	add_rect(55, 59, 75, 79)
-	add_tbox(5, 5, 10, 2)
-	all_tboxes[0].focused = true
-
 	for !ctx.should_close {
-		poll_input()
-		update()
-		draw()
-		SDL.Delay(10)
+		e: SDL.Event
+		if SDL.WaitEventTimeout(&e, 500) {
+			handle_event(&e)
+			update()
+			draw()
+		}
 	}
 
 	SDL.DestroyWindow(ctx.window)
