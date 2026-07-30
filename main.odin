@@ -190,7 +190,7 @@ main :: proc() {
 		poll_input()
 		update()
 		draw()
-		SDL.Delay(1)
+		SDL.Delay(10)
 	}
 
 	SDL.DestroyWindow(ctx.window)
