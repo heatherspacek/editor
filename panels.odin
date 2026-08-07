@@ -1,4 +1,5 @@
 package editre
+import "core:fmt"
 import "core:strings"
 import SDL "vendor:sdl3"
 import TTF "vendor:sdl3/ttf"
@@ -47,14 +48,16 @@ fontchange_panel :: proc(p: ^Panel, f: ^TTF.Font) {
 
 draw_panel :: proc(p: ^Panel) {
 	r := p.screen_pos
-	fr := SDL.FRect{f32(r[0]), f32(r[1]), f32(r[2]), f32(r[3])}
+	fr := SDL.FRect{f32(r[0] + 1), f32(r[1] + 1), f32(r[2] - 2), f32(r[3] - 2)}
+	SDL.SetRenderDrawColor(ctx.renderer, 210, 255, 255, 255)
 	SDL.RenderRect(ctx.renderer, &fr)
 
 	// determine which sdl_lines are in the drawing region
 	first_line: ^TTF.Text = p.sdl_lines[p.scroll_pos]
 	TTF.DrawRendererText(first_line, f32(p.screen_pos[0]), f32(p.screen_pos[1]))
-	w, h: i32
-	TTF.GetTextSize(first_line, &w, &h)
+	// w, h: i32
+	// TTF.GetTextSize(first_line, &w, &h)
+	h := 23
 	for i in 1 ..= 10 {
 		TTF.DrawRendererText(
 			p.sdl_lines[p.scroll_pos + i],

@@ -102,8 +102,17 @@ handle_event :: proc(e: ^SDL.Event) {
 	case .DROP_FILE:
 	// :0
 	case .MOUSE_WHEEL:
+		fmt.print(e.wheel.integer_y, e.wheel.y, "\n")
+		// TODO: integer_y is crappy because there are tons of "0" events
+		// that don't accumulate properly. COUNT UP SCROLLS WITH THE FLOAT AMOUNT!
+
 		p := get_focused_panel()
-		p.scroll_pos += 1
+		if p == nil {return}
+		new_scroll_pos := p.scroll_pos - 2 * int(e.wheel.integer_y)
+		maxline := len(p.sdl_lines) - 10
+		if new_scroll_pos < 0 {new_scroll_pos = 0}
+		if new_scroll_pos >= (maxline) {new_scroll_pos = maxline - 1}
+		p.scroll_pos = new_scroll_pos
 	case .TEXT_INPUT:
 	// bd := &all_tboxes[0].builder
 	// strings.write_string(bd, string(e.text.text))
