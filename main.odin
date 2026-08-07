@@ -89,8 +89,13 @@ sdl_init :: proc() -> bool {
 	return true
 }
 
-handle_event :: proc(e: ^SDL.Event) {
+scroll_accum: f32 = 0.0
+last_quantized_scroll := 0
+handle_event :: proc(e: ^SDL.Event) -> bool {
+	log.info("event:", e.type)
 	#partial switch (e.type) {
+	case .MOUSE_MOTION:
+		return false // unless... yea :D
 	case .QUIT:
 		ctx.should_close = true
 	case .WINDOW_RESIZED:
@@ -102,17 +107,22 @@ handle_event :: proc(e: ^SDL.Event) {
 	case .DROP_FILE:
 	// :0
 	case .MOUSE_WHEEL:
-		fmt.print(e.wheel.integer_y, e.wheel.y, "\n")
+		// fmt.print(e.wheel.integer_y, e.wheel.y, "\n")
 		// TODO: integer_y is crappy because there are tons of "0" events
 		// that don't accumulate properly. COUNT UP SCROLLS WITH THE FLOAT AMOUNT!
+		scroll_accum += e.wheel.y
 
 		p := get_focused_panel()
-		if p == nil {return}
-		new_scroll_pos := p.scroll_pos - 2 * int(e.wheel.integer_y)
-		maxline := len(p.sdl_lines) - 10
+		if p == nil {return false}
+		if (int(scroll_accum) == last_quantized_scroll) {return false}
+
+		new_scroll_pos := p.scroll_pos - 2 * int(scroll_accum)
+		maxline := len(p.sdl_lines) - 20
 		if new_scroll_pos < 0 {new_scroll_pos = 0}
 		if new_scroll_pos >= (maxline) {new_scroll_pos = maxline - 1}
 		p.scroll_pos = new_scroll_pos
+		last_quantized_scroll = int(scroll_accum)
+		return true
 	case .TEXT_INPUT:
 	// bd := &all_tboxes[0].builder
 	// strings.write_string(bd, string(e.text.text))
@@ -122,6 +132,7 @@ handle_event :: proc(e: ^SDL.Event) {
 			log.warn("keybind not mapped: ", e.key.mod, e.key.scancode)
 		}
 	}
+	return true
 }
 
 frame := 0
@@ -178,9 +189,9 @@ main :: proc() {
 	for !ctx.should_close {
 		e: SDL.Event
 		if SDL.WaitEventTimeout(&e, 500) {
-			handle_event(&e)
+			needs_redraw := handle_event(&e)
 			update()
-			draw()
+			if needs_redraw {draw()}
 		}
 	}
 

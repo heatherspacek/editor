@@ -57,8 +57,8 @@ draw_panel :: proc(p: ^Panel) {
 	TTF.DrawRendererText(first_line, f32(p.screen_pos[0]), f32(p.screen_pos[1]))
 	// w, h: i32
 	// TTF.GetTextSize(first_line, &w, &h)
-	h := 23
-	for i in 1 ..= 10 {
+	h := 12 + 3 * p.font_i
+	for i in 1 ..= 20 {
 		TTF.DrawRendererText(
 			p.sdl_lines[p.scroll_pos + i],
 			f32(p.screen_pos[0]),
