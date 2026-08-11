@@ -61,13 +61,21 @@ fontchange_panel :: proc(p: ^Panel, f: ^TTF.Font) {
 
 draw_panel :: proc(p: ^Panel) {
 	r := p.screen_pos
-	fr := SDL.FRect{f32(r[0] + 1), f32(r[1] + 1), f32(r[2] - 2), f32(r[3] - 2)}
+
+	new_cr := SDL.Rect{
+		i32(r[0]-1),
+		i32(r[1]-1),
+		i32(r[2]+2),
+		i32(r[3]+2),
+	}
+	SDL.SetRenderClipRect(ctx.renderer, &new_cr)
+
+	// border.
+	fr := SDL.FRect{f32(r[0]), f32(r[1]), f32(r[2]), f32(r[3])}
 	SDL.SetRenderDrawColor(ctx.renderer, 210, 255, 255, 255)
 	SDL.RenderRect(ctx.renderer, &fr)
 
 	// determine which sdl_lines are in the drawing region
-	// first_line: ^TTF.Text = p.sdl_lines[p.scroll_pos]
-	// TTF.DrawRendererText(first_line, f32(p.screen_pos[0]), f32(p.screen_pos[1]))
 	w, h: i32
 	TTF.GetTextSize(p._sizing_text, &w, &h)
 	for i in 0 ..= 20 {

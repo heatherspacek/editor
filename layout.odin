@@ -5,7 +5,7 @@ Rect :: [4]u16
 
 pad_rect :: proc(r: Rect) -> Rect {
 	p_m :: PANELS_MARGIN
-	return Rect{r[0] + p_m, r[1] + p_m, r[2] - p_m, r[3] - p_m}
+	return Rect{r[0] + p_m, r[1] + p_m, r[2] -2 *p_m, r[3] - 2*p_m}
 }
 
 panels_layout :: proc(n_panels: int, ret: []Rect) -> []Rect {
