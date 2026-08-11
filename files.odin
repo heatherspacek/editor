@@ -48,12 +48,7 @@ open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 	contents, err := read_file(string(selection[0]))
 	append_elem(&all_open_files, contents)
 
-	// TODO (easy): move this to panels.odin
-	new_panel := new(Panel)
-	new_panel.file = contents
-	new_panel.focused = true
-	new_panel.font_i = 3
-	populate_panel(new_panel)
+	np := new_panel(contents)
 
 	// LAYOUTING
 	n_panels := len(all_open_files)
@@ -61,9 +56,10 @@ open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 	defer delete(ret)
 	new_layout := panels_layout(n_panels, ret)
 
-	append_elem(&all_panels, new_panel^)
+	append_elem(&all_panels, np^)
 	for &p, i in all_panels {
 		p.screen_pos = new_layout[i]
 	}
-
+	e := SDL.Event{}
+	_ = SDL.PushEvent(&e)
 }
