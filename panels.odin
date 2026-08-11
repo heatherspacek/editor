@@ -3,6 +3,7 @@ import "core:fmt"
 import "core:strings"
 import SDL "vendor:sdl3"
 import TTF "vendor:sdl3/ttf"
+import "core:log"
 
 Panel :: struct {
 	cursor_pos:		[2]int,
@@ -69,13 +70,26 @@ draw_panel :: proc(p: ^Panel) {
 	// TTF.DrawRendererText(first_line, f32(p.screen_pos[0]), f32(p.screen_pos[1]))
 	w, h: i32
 	TTF.GetTextSize(p._sizing_text, &w, &h)
-	// h := 12 + 3 * p.font_i
 	for i in 0 ..= 20 {
 		TTF.DrawRendererText(
 			p.sdl_lines[p.scroll_pos + i],
 			f32(p.screen_pos[0]),
 			f32(p.screen_pos[1] + u16(i) * u16(h)),
 		)
+	}
+
+	// draw the cursor, if it's on-screen.
+	cursor_onscreen := p.cursor_pos[0] >= p.scroll_pos && p.cursor_pos[0] < p.scroll_pos + 20
+	log.info("cursor onscreen = ", cursor_onscreen)
+	if cursor_onscreen {
+		cur := SDL.FRect{
+			f32(p.cursor_pos[0]) * f32(w) + f32(p.screen_pos[0]),
+			f32(p.cursor_pos[1] - p.scroll_pos) * f32(h) + f32(p.screen_pos[1]),
+			f32(w),
+			f32(h)
+		}
+		SDL.SetRenderDrawColor(ctx.renderer, 255, 20, 20, 255)
+		SDL.RenderRect(ctx.renderer, &cur)
 	}
 
 }
