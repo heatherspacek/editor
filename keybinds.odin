@@ -12,8 +12,9 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (hendled: bo
 		// no mod pressed-- we should assume 'textinput' captured.
 		#partial switch code {
 		case .BACKSPACE:
-			bd := &all_tboxes[0].builder
-			strings.pop_rune(bd)
+			// bd := &all_tboxes[0].builder
+			// strings.pop_rune(bd)
+
 		}
 		return true
 	} else if (CTRL_MASK & mod) != nil {

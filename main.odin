@@ -94,8 +94,11 @@ last_quantized_scroll := 0
 handle_event :: proc(e: ^SDL.Event) -> bool {
 	log.info("event:", e.type)
 	#partial switch (e.type) {
-	case .MOUSE_MOTION:
-		return false // unless... yea :D
+	case .FIRST:
+		// this is a sloppy user event.
+		return true
+	case .WINDOW_EXPOSED:
+		return true
 	case .QUIT:
 		ctx.should_close = true
 	case .WINDOW_RESIZED:
@@ -103,7 +106,7 @@ handle_event :: proc(e: ^SDL.Event) -> bool {
 		SDL.GetWindowSizeInPixels(ctx.window, &w, &h)
 		application_h = h
 		application_w = w
-
+		return true
 	case .DROP_FILE:
 	// :0
 	case .MOUSE_WHEEL:
@@ -131,8 +134,9 @@ handle_event :: proc(e: ^SDL.Event) -> bool {
 		if !handled {
 			log.warn("keybind not mapped: ", e.key.mod, e.key.scancode)
 		}
+		return handled
 	}
-	return true
+	return false
 }
 
 frame := 0
@@ -192,6 +196,12 @@ main :: proc() {
 			needs_redraw := handle_event(&e)
 			update()
 			if needs_redraw {draw()}
+		}
+		else
+		{
+			// timed out
+			update()
+			draw()
 		}
 	}
 
