@@ -4,7 +4,7 @@ import "core:log"
 import "core:strings"
 import SDL "vendor:sdl3"
 
-dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (hendled: bool) {
+dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (handled: bool) {
 
 	CTRL_MASK := SDL.Keymod{.LCTRL, .RCTRL}
 
@@ -12,11 +12,25 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (hendled: bo
 		// no mod pressed-- we should assume 'textinput' captured.
 		#partial switch code {
 		case .BACKSPACE:
-			// bd := &all_tboxes[0].builder
-			// strings.pop_rune(bd)
-
+		// bd := &all_tboxes[0].builder
+		// strings.pop_rune(bd)
+		case .RIGHT:
+			current_pos := get_focused_panel().cursor_pos
+			move_cursor({current_pos[0] + 1, current_pos[1]})
+			return true
+		case .LEFT:
+			current_pos := get_focused_panel().cursor_pos
+			move_cursor({current_pos[0] - 1, current_pos[1]})
+			return true
+		case .UP:
+			current_pos := get_focused_panel().cursor_pos
+			move_cursor({current_pos[0], current_pos[1] - 1})
+			return true
+		case .DOWN:
+			current_pos := get_focused_panel().cursor_pos
+			move_cursor({current_pos[0], current_pos[1] + 1})
+			return true
 		}
-		return true
 	} else if (CTRL_MASK & mod) != nil {
 		#partial switch code {
 		case .C:
@@ -37,13 +51,7 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (hendled: bo
 				false,
 			)
 		case .TAB:
-			for &tb, i in all_tboxes {
-				if tb.focused {
-					tb.focused = false
-					all_tboxes[(i + 1) % len(all_tboxes)].focused = true
-					break
-				}
-			}
+			// ... ctrl+tab
 			return true
 		case .EQUALS:
 			// font size up

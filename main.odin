@@ -127,8 +127,9 @@ handle_event :: proc(e: ^SDL.Event) -> bool {
 		last_quantized_scroll = int(scroll_accum)
 		return true
 	case .TEXT_INPUT:
-	// bd := &all_tboxes[0].builder
-	// strings.write_string(bd, string(e.text.text))
+		// bd := &all_tboxes[0].builder
+		// strings.write_string(bd, string(e.text.text))
+		line_insert_text(e.text.text)
 	case .KEY_DOWN:
 		handled := dispatch_to_keybind(e.key.mod, e.key.scancode)
 		if !handled {
@@ -196,9 +197,7 @@ main :: proc() {
 			needs_redraw := handle_event(&e)
 			update()
 			if needs_redraw {draw()}
-		}
-		else
-		{
+		} else {
 			// timed out
 			update()
 			draw()
