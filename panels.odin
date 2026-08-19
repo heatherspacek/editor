@@ -26,7 +26,6 @@ new_panel :: proc(contents: ^file_contents) -> ^Panel {
 	p.font_i = START_FONT_I
 	for &fline in contents {
 		cs := strings.to_cstring(&fline.builder)
-		defer delete(cs)
 		tx := TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], cs, len(cs))
 		append_elem(&p.sdl_lines, tx)
 	}

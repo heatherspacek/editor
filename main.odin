@@ -129,7 +129,8 @@ handle_event :: proc(e: ^SDL.Event) -> bool {
 	case .TEXT_INPUT:
 		// bd := &all_tboxes[0].builder
 		// strings.write_string(bd, string(e.text.text))
-		line_insert_text(e.text.text)
+		line_insert_text(e.text.text, get_focused_panel().cursor_pos[0])
+		return true
 	case .KEY_DOWN:
 		handled := dispatch_to_keybind(e.key.mod, e.key.scancode)
 		if !handled {
