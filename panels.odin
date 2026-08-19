@@ -1,19 +1,19 @@
 package editre
 import "core:fmt"
+import "core:log"
 import "core:strings"
 import SDL "vendor:sdl3"
 import TTF "vendor:sdl3/ttf"
-import "core:log"
 
 Panel :: struct {
-	cursor_pos:		[2]int,
-	file:       	^file_contents,
-	focused:    	bool,
-	font_i:     	int,
-	_sizing_text:	^TTF.Text,
-	sdl_lines:  	[dynamic]^TTF.Text,
-	screen_pos: 	Rect,
-	scroll_pos: 	int,
+	cursor_pos:   [2]int,
+	file:         ^file_contents,
+	focused:      bool,
+	font_i:       int,
+	_sizing_text: ^TTF.Text,
+	sdl_lines:    [dynamic]^TTF.Text,
+	screen_pos:   Rect,
+	scroll_pos:   int,
 }
 
 all_panels := [dynamic]Panel{}
@@ -31,7 +31,6 @@ new_panel :: proc(contents: ^file_contents) -> ^Panel {
 		append_elem(&p.sdl_lines, tx)
 	}
 	p._sizing_text = TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], "#", 1)
-
 	p.cursor_pos = {0, 0}
 	return p
 }
@@ -62,12 +61,7 @@ fontchange_panel :: proc(p: ^Panel, f: ^TTF.Font) {
 draw_panel :: proc(p: ^Panel) {
 	r := p.screen_pos
 
-	new_cr := SDL.Rect{
-		i32(r[0]-1),
-		i32(r[1]-1),
-		i32(r[2]+2),
-		i32(r[3]+2),
-	}
+	new_cr := SDL.Rect{i32(r[0] - 1), i32(r[1] - 1), i32(r[2] + 2), i32(r[3] + 2)}
 	SDL.SetRenderClipRect(ctx.renderer, &new_cr)
 
 	// border.
@@ -90,11 +84,11 @@ draw_panel :: proc(p: ^Panel) {
 	cursor_onscreen := p.cursor_pos[0] >= p.scroll_pos && p.cursor_pos[0] < p.scroll_pos + 20
 	log.info("cursor onscreen = ", cursor_onscreen)
 	if cursor_onscreen {
-		cur := SDL.FRect{
+		cur := SDL.FRect {
 			f32(p.cursor_pos[0]) * f32(w) + f32(p.screen_pos[0]),
 			f32(p.cursor_pos[1] - p.scroll_pos) * f32(h) + f32(p.screen_pos[1]),
 			f32(w),
-			f32(h)
+			f32(h),
 		}
 		SDL.SetRenderDrawColor(ctx.renderer, 255, 20, 20, 255)
 		SDL.RenderRect(ctx.renderer, &cur)
