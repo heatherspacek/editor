@@ -144,8 +144,8 @@ draw :: proc() {
 	paintwith(col_bg)
 	SDL.RenderClear(ctx.renderer)
 
-	for &panel in all_panels {
-		draw_panel(&panel)
+	for panel in all_panels {
+		draw_panel(panel)
 	}
 
 	SDL.RenderPresent(ctx.renderer)

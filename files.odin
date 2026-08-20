@@ -50,16 +50,6 @@ open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 
 	np := new_panel(contents)
 
-	// LAYOUTING
-	n_panels := len(all_open_files)
-	ret := make([]Rect, n_panels)
-	defer delete(ret)
-	new_layout := panels_layout(n_panels, ret)
-
-	append_elem(&all_panels, np^)
-	for &p, i in all_panels {
-		p.screen_pos = new_layout[i]
-	}
 	e := SDL.Event{}
 	_ = SDL.PushEvent(&e)
 }

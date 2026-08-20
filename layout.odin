@@ -1,6 +1,9 @@
 package editre
 
+import "core:fmt"
+
 PANELS_MARGIN: u16 : 5
+LINE_NO_LEFT_PAD: u16: 18
 Rect :: [4]u16
 
 pad_rect :: proc(r: Rect) -> Rect {
@@ -8,7 +11,8 @@ pad_rect :: proc(r: Rect) -> Rect {
 	return Rect{r[0] + p_m, r[1] + p_m, r[2] -2 *p_m, r[3] - 2*p_m}
 }
 
-panels_layout :: proc(n_panels: int, ret: []Rect) -> []Rect {
+panels_layout :: proc(n_panels: int) -> [MAX_PANELS]Rect {
+	ret : [MAX_PANELS]Rect
 	switch n_panels {
 	case 0:
 	case 1:
@@ -27,4 +31,16 @@ panels_layout :: proc(n_panels: int, ret: []Rect) -> []Rect {
 		panic("")
 	}
 	return ret
+}
+
+relayout_screen :: proc() {
+	// LAYOUTING
+	n_panels := len(all_panels)
+	rxx : [MAX_PANELS]Rect
+	new_layout := panels_layout(n_panels)
+
+	for &p, i in all_panels {
+		p.screen_pos = new_layout[i]
+		fmt.println("from relayout: ", new_layout[i])
+	}
 }
