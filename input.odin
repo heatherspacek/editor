@@ -4,10 +4,11 @@ import "core:fmt"
 import "core:strings"
 import TTF "vendor:sdl3/ttf"
 
-line_insert_text :: proc(text: cstring, insert_pos: int) {
+line_insert_text :: proc(text: cstring) {
 	curr_panel := get_focused_panel()
 	if curr_panel == nil {return}
 	line_i := curr_panel.cursor_pos[1]
+	insert_pos := curr_panel.cursor_pos[0]
 	curr_line := &curr_panel.file[line_i]
 
 	curr_line_string := strings.to_string(curr_line.builder)
@@ -26,7 +27,11 @@ line_insert_text :: proc(text: cstring, insert_pos: int) {
 }
 
 line_backspace :: proc() {
+	panel := get_focused_panel()
+	// trying not deleting from the backing store.
+	TTF.DeleteTextString(panel.sdl_lines[panel.cursor_pos[1]], i32(panel.cursor_pos[0]), 1)
 
+	panel.cursor_pos -= {1, 0}
 }
 
 line_delete_word_back :: proc() {

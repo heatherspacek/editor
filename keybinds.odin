@@ -12,25 +12,21 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (handled: bo
 		// no mod pressed-- we should assume 'textinput' captured.
 		#partial switch code {
 		case .BACKSPACE:
-		// bd := &all_tboxes[0].builder
-		// strings.pop_rune(bd)
+			line_backspace()
 		case .RIGHT:
 			current_pos := get_focused_panel().cursor_pos
 			move_cursor({current_pos[0] + 1, current_pos[1]})
-			return true
 		case .LEFT:
 			current_pos := get_focused_panel().cursor_pos
 			move_cursor({current_pos[0] - 1, current_pos[1]})
-			return true
 		case .UP:
 			current_pos := get_focused_panel().cursor_pos
 			move_cursor({current_pos[0], current_pos[1] - 1})
-			return true
 		case .DOWN:
 			current_pos := get_focused_panel().cursor_pos
 			move_cursor({current_pos[0], current_pos[1] + 1})
-			return true
 		}
+		return true
 	} else if (CTRL_MASK & mod) != nil {
 		#partial switch code {
 		case .C:
