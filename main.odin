@@ -25,8 +25,6 @@ scaling: f32 = 1.0
 application_w: i32 = 640
 application_h: i32 = 420
 
-charsize_w_px, charsize_h_px: i32
-
 sdl_init :: proc() -> bool {
 	if wayland_display, ok := os.lookup_env_alloc("WAYLAND_DISPLAY", context.allocator);
 	   ok && wayland_display != "" {
@@ -80,10 +78,6 @@ sdl_init :: proc() -> bool {
 		base_pt += 2
 	}
 
-	txx := TTF.CreateText(ctx.text_engine, fonts[2], cstring("@"), 1)
-	// =======================
-	TTF.GetTextSize(txx, &charsize_w_px, &charsize_h_px)
-
 	_ = SDL.StartTextInput(ctx.window)
 
 	return true
@@ -91,11 +85,12 @@ sdl_init :: proc() -> bool {
 
 scroll_accum: f32 = 0.0
 last_quantized_scroll := 0
-handle_event :: proc(e: ^SDL.Event) -> bool {
-	log.info("event:", e.type)
+handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
+	// log.info("event:", e.type)
 	#partial switch (e.type) {
 	case .FIRST:
 		// this is a sloppy user event.
+		// currently used for file open.
 		return true
 	case .WINDOW_EXPOSED:
 		return true
@@ -127,8 +122,6 @@ handle_event :: proc(e: ^SDL.Event) -> bool {
 		last_quantized_scroll = int(scroll_accum)
 		return true
 	case .TEXT_INPUT:
-		// bd := &all_tboxes[0].builder
-		// strings.write_string(bd, string(e.text.text))
 		line_insert_text(e.text.text)
 		return true
 	case .KEY_DOWN:
@@ -138,46 +131,18 @@ handle_event :: proc(e: ^SDL.Event) -> bool {
 		}
 		return handled
 	}
+	// default: DONT redraw!
 	return false
 }
 
 frame := 0
 update :: proc() {
+	// we can put frame-linked animations here?
 }
 
 draw :: proc() {
-
-	SDL.SetRenderDrawColor(ctx.renderer, 12, 17, 23, 0xff)
+	paintwith(col_bg)
 	SDL.RenderClear(ctx.renderer)
-
-	// for tb, i in all_tboxes {
-	// 	outline := SDL.FRect {
-	// 		f32(tb.x - 1),
-	// 		f32(tb.y - 1),
-	// 		// f32(charsize_w_px * i32(tb.w_chars) + 1),
-	// 		// f32(charsize_h_px * i32(tb.h_chars) + 1),
-	// 		f32(tb.w_chars - 1),
-	// 		f32(tb.h_chars - 1),
-	// 	}
-
-	// 	if tb.focused {
-	// 		SDL.SetRenderDrawColor(ctx.renderer, 200, 200, 220, 0xff)
-	// 	} else {
-	// 		SDL.SetRenderDrawColor(ctx.renderer, 80, 80, 90, 0xff)
-	// 	}
-	// 	SDL.RenderRect(ctx.renderer, &outline)
-
-	// 	// silly oversight: datastructs are disconnected (all_tboxes, all_open_files)
-	// 	// also need a VIEWPORT concept???
-	// 	if len(all_open_files) > 0 {
-	// 		fcontents := all_open_files[i]
-	// 		for &line, line_i in fcontents {
-	// 			cs := strings.to_cstring(&line.builder)
-	// 			tn := TTF.CreateText(ctx.text_engine, fonts[1], cs, len(cs))
-	// 			_ = TTF.DrawRendererText(tn, f32(tb.x), f32(int(tb.y) + (25 * line_i)))
-	// 			TTF.DestroyText(tn)
-	// 		}
-	// 	}
 
 	for &panel in all_panels {
 		draw_panel(&panel)

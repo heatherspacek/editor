@@ -65,7 +65,7 @@ draw_panel :: proc(p: ^Panel) {
 
 	// border.
 	fr := SDL.FRect{f32(r[0]), f32(r[1]), f32(r[2]), f32(r[3])}
-	SDL.SetRenderDrawColor(ctx.renderer, 210, 255, 255, 255)
+	paintwith(col_lineactive)
 	SDL.RenderRect(ctx.renderer, &fr)
 
 	// determine which sdl_lines are in the drawing region
@@ -89,7 +89,7 @@ draw_panel :: proc(p: ^Panel) {
 			f32(w),
 			f32(h),
 		}
-		SDL.SetRenderDrawColor(ctx.renderer, 255, 20, 20, 255)
+		paintwith(col_red)
 		SDL.RenderRect(ctx.renderer, &cur)
 	}
 
