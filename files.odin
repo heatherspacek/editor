@@ -13,10 +13,8 @@ file_line :: struct {
 	len: int,
 }
 
-file_contents :: [dynamic]^file_line
+file_contents :: [dynamic]file_line
 
-files_list :: [dynamic]^file_contents
-all_open_files := files_list{}
 
 read_file :: proc(fpath: string) -> (lines: ^file_contents, err: os.Error) {
 	finfo := os.stat(fpath, context.allocator) or_return
@@ -36,13 +34,14 @@ read_file :: proc(fpath: string) -> (lines: ^file_contents, err: os.Error) {
 	START_FONT_I := 3
 	for b, i in fbytes {
 		if b == '\n' || i == len(fbytes) - 1 {
-			fl_ptr := new(file_line)
+			fl := file_line{}
 			cs := cstring(raw_data(fbytes[last_break:i]))
-			len_ := i - last_break
-			fl_ptr.sdl_text = TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], cs, uint(len_))
-			fl_ptr.len = len_
-			append_elem(lines, fl_ptr)
-			last_break = i
+			len_ := max(i - last_break, 1)
+			fl.sdl_text = TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], cs, uint(len_))
+			fl.len = len_
+			append_elem(lines, fl)
+			last_break = i + 1
+			fmt.println(cs, len_)
 		}
 	}
 	return
@@ -51,7 +50,6 @@ read_file :: proc(fpath: string) -> (lines: ^file_contents, err: os.Error) {
 open_file_cbk :: proc "c" (_: rawptr, selection: [^]cstring, _: i32) {
 	context = runtime.default_context()
 	contents, err := read_file(string(selection[0]))
-	append_elem(&all_open_files, contents)
 
 	np := new_panel(contents)
 	e := SDL.Event{}

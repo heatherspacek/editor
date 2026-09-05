@@ -11,6 +11,8 @@ line_insert_text :: proc(text: cstring) {
 	insert_pos := curr_panel.cursor_pos[0]
 
 	TTF.InsertTextString(curr_panel.lines[line_i].sdl_text, i32(insert_pos), text, len(text))
+	curr_panel.lines[curr_panel.cursor_pos[1]].len += len(text)
+
 	// todo: put this into some data structure that gives us UNDO!
 
 	curr_panel.cursor_pos += {1, 0}
@@ -19,7 +21,7 @@ line_insert_text :: proc(text: cstring) {
 line_backspace :: proc() {
 	panel := get_focused_panel()
 	TTF.DeleteTextString(panel.lines[panel.cursor_pos[1]].sdl_text, i32(panel.cursor_pos[0]), 1)
-
+	panel.lines[panel.cursor_pos[1]].len -= 1
 	panel.cursor_pos -= {1, 0}
 }
 
@@ -34,4 +36,5 @@ move_cursor :: proc(new_pos: [2]int) {
 	target_line_len := p.lines[dest_line].len
 	dest_col := clamp(new_pos[0], 0, target_line_len)
 	p.cursor_pos = {dest_col, dest_line}
+	fmt.println(p.cursor_pos)
 }

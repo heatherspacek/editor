@@ -11,7 +11,7 @@ Panel :: struct {
 	cursor_pos:   [2]int,
 	focused:      bool,
 	font_i:       int,
-	lines:		  ^[dynamic]^file_line,
+	lines:		  ^[dynamic]file_line,
 	_n_vis_lines: int,
 	_sizing_text: ^TTF.Text,
 	screen_pos:   Rect,
@@ -23,18 +23,16 @@ all_panels : [dynamic]^Panel
 new_panel :: proc(contents: ^file_contents) -> ^Panel {
 	START_FONT_I := 3
 	p := new(Panel)
-	append_elem(&all_panels, p)
 	p.focused = true
 	p.font_i = START_FONT_I
 	p.lines = contents
+	append(&all_panels, p)
 
 	relayout_screen()
 
 	p._sizing_text = TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], "#", 1)
 	p._n_vis_lines = count_vislines_panel(p)
 	p.cursor_pos = {0, 0}
-
-	fmt.print(len(p.lines))
 
 	return p
 }
@@ -93,7 +91,6 @@ draw_panel :: proc(p: ^Panel) {
 
 	// draw the cursor, if it's on-screen.
 	cursor_onscreen := p.cursor_pos[0] >= p.scroll_pos && p.cursor_pos[0] < p.scroll_pos + 20
-	log.info("cursor onscreen = ", cursor_onscreen)
 	if cursor_onscreen {
 		cur := SDL.FRect {
 			f32(p.cursor_pos[0]) * f32(w) + f32(p.screen_pos[0]),
