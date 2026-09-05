@@ -115,7 +115,7 @@ handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
 		if (int(scroll_accum) == last_quantized_scroll) {return false}
 
 		new_scroll_pos := p.scroll_pos - 2 * int(scroll_accum)
-		maxline := len(p.sdl_lines) - 20
+		maxline := len(p.lines) - 20
 		if new_scroll_pos < 0 {new_scroll_pos = 0}
 		if new_scroll_pos >= (maxline) {new_scroll_pos = maxline - 1}
 		p.scroll_pos = new_scroll_pos

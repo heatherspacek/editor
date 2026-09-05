@@ -41,6 +41,5 @@ relayout_screen :: proc() {
 
 	for &p, i in all_panels {
 		p.screen_pos = new_layout[i]
-		fmt.println("from relayout: ", new_layout[i])
 	}
 }

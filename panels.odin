@@ -9,12 +9,11 @@ MAX_PANELS :: 16
 
 Panel :: struct {
 	cursor_pos:   [2]int,
-	file:         ^file_contents,
 	focused:      bool,
 	font_i:       int,
+	lines:		  ^[dynamic]^file_line,
 	_n_vis_lines: int,
 	_sizing_text: ^TTF.Text,
-	sdl_lines:    [dynamic]^TTF.Text,
 	screen_pos:   Rect,
 	scroll_pos:   int,
 }
@@ -25,21 +24,17 @@ new_panel :: proc(contents: ^file_contents) -> ^Panel {
 	START_FONT_I := 3
 	p := new(Panel)
 	append_elem(&all_panels, p)
-	p.file = contents
 	p.focused = true
 	p.font_i = START_FONT_I
-	for &fline in contents {
-		cs := strings.to_cstring(&fline.builder)
-		tx := TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], cs, len(cs))
-		append_elem(&p.sdl_lines, tx)
-	}
-	relayout_screen()
+	p.lines = contents
 
-	fmt.println("from new_panel: ", p.screen_pos)
+	relayout_screen()
 
 	p._sizing_text = TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], "#", 1)
 	p._n_vis_lines = count_vislines_panel(p)
 	p.cursor_pos = {0, 0}
+
+	fmt.print(len(p.lines))
 
 	return p
 }
@@ -54,8 +49,8 @@ get_focused_panel :: proc() -> ^Panel {
 }
 
 cleanup_panel :: proc(p: ^Panel) {
-	for &sline in p.sdl_lines {
-		TTF.DestroyText(sline)
+	for &sline in p.lines {
+		TTF.DestroyText(sline.sdl_text)
 	}
 	TTF.DestroyText(p._sizing_text)
 }
@@ -63,13 +58,12 @@ cleanup_panel :: proc(p: ^Panel) {
 count_vislines_panel :: proc(p: ^Panel) -> int {
 	w, h: i32
 	TTF.GetTextSize(p._sizing_text, &w, &h)
-	fmt.println("from count_vislines_panel: ", p.screen_pos, h)
 	return int(p.screen_pos[3] / u16(h)) + 1
 }
 
 fontchange_panel :: proc(p: ^Panel, f: ^TTF.Font) {
-	for &sline in p.sdl_lines {
-		TTF.SetTextFont(sline, f)
+	for &sline in p.lines {
+		TTF.SetTextFont(sline.sdl_text, f)
 	}
 	TTF.SetTextFont(p._sizing_text, f)
 	p._n_vis_lines = count_vislines_panel(p)
@@ -91,7 +85,7 @@ draw_panel :: proc(p: ^Panel) {
 	TTF.GetTextSize(p._sizing_text, &w, &h)
 	for i in 0 ..= p._n_vis_lines {
 		TTF.DrawRendererText(
-			p.sdl_lines[p.scroll_pos + i],
+			p.lines[p.scroll_pos + i].sdl_text,
 			f32(p.screen_pos[0]),
 			f32(p.screen_pos[1] + u16(i) * u16(h)),
 		)
