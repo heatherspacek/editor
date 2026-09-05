@@ -20,7 +20,7 @@ line_insert_text :: proc(text: cstring) {
 
 line_backspace :: proc() {
 	panel := get_focused_panel()
-	TTF.DeleteTextString(panel.lines[panel.cursor_pos[1]].sdl_text, i32(panel.cursor_pos[0]), 1)
+	TTF.DeleteTextString(panel.lines[panel.cursor_pos[1]].sdl_text, i32(panel.cursor_pos[0]-1), 1)
 	panel.lines[panel.cursor_pos[1]].len -= 1
 	panel.cursor_pos -= {1, 0}
 }
