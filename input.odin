@@ -20,9 +20,22 @@ line_insert_text :: proc(text: cstring) {
 
 line_backspace :: proc() {
 	panel := get_focused_panel()
-	TTF.DeleteTextString(panel.lines[panel.cursor_pos[1]].sdl_text, i32(panel.cursor_pos[0]-1), 1)
-	panel.lines[panel.cursor_pos[1]].len -= 1
-	panel.cursor_pos -= {1, 0}
+	cur := panel.cursor_pos
+	if cur[0] == 0 {
+		if cur[1] == 0 {return}
+		cs := cstring(panel.lines[cur[1]].sdl_text.text)
+		landing_pos := panel.lines[cur[1]-1].len
+		adding_len := panel.lines[cur[1]].len
+		TTF.AppendTextString(panel.lines[cur[1]-1].sdl_text, cs, uint(adding_len))
+		panel.lines[cur[1]-1].len += adding_len
+		ordered_remove(panel.lines, cur[1])
+		panel.cursor_pos = {landing_pos , cur[1]-1}
+	}
+	else {
+		TTF.DeleteTextString(panel.lines[cur[1]].sdl_text, i32(cur[0]-1), 1)
+		panel.lines[cur[1]].len -= 1
+		panel.cursor_pos -= {1, 0}
+	}
 }
 
 line_delete_word_back :: proc() {
