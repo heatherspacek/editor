@@ -98,6 +98,7 @@ draw_panel :: proc(p: ^Panel) {
 
 	// draw the cursor, if it's on-screen.
 	cursor_onscreen := p.cursor_pos[0] >= p.scroll_pos && p.cursor_pos[0] < p.scroll_pos + 20
+
 	if cursor_onscreen {
 		cur := SDL.FRect {
 			f32(p.cursor_pos[0]) * f32(w) + f32(p.screen_pos[0]),
@@ -105,8 +106,31 @@ draw_panel :: proc(p: ^Panel) {
 			f32(w),
 			f32(h),
 		}
-		paintwith(col_red)
-		SDL.RenderRect(ctx.renderer, &cur)
+		paintwith(col_cursor)
+		SDL.RenderFillRect(ctx.renderer, &cur)
+
+		// render character on top of the cursor... watch this...
+		curclip := SDL.Rect{i32(cur.x-1), i32(cur.y-1), i32(cur.w+2), i32(cur.h+2)}
+		SDL.SetRenderClipRect(ctx.renderer, &curclip)
+		TTF.SetTextColor(
+			p.lines[p.cursor_pos[1]].sdl_text,
+			col_nord01[0],
+			col_nord01[1],
+			col_nord01[2],
+			0xFF,
+		)
+		TTF.DrawRendererText(
+			p.lines[p.cursor_pos[1]].sdl_text,
+			f32(p.screen_pos[0]),
+			f32(p.screen_pos[1] + u16(p.cursor_pos[1]) * u16(h)),
+		)
+		TTF.SetTextColor(
+			p.lines[p.cursor_pos[1]].sdl_text,
+			col_nord04[0],
+			col_nord04[1],
+			col_nord04[2],
+			0xFF,
+		)
 	}
 
 }

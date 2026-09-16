@@ -27,9 +27,11 @@ col_nord15 :: colour{180, 142, 173}
 
 col_bg :: col_nord00
 col_lineactive :: col_nord04
-col_line_highlight :: col_nord01
+col_line_highlight :: col_nord02
+col_cursor :: col_nord05
 col_red :: col_nord11
 
 paintwith :: proc(col: colour) {
     SDL.SetRenderDrawColor(ctx.renderer, col[0], col[1], col[2], 0xff)
 }
+

@@ -90,7 +90,7 @@ handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
 	#partial switch (e.type) {
 	case .FIRST:
 		// this is a sloppy user event.
-		// currently used for file open.
+		// currently used for forcing redraw on file open.
 		return true
 	case .WINDOW_EXPOSED:
 		return true
@@ -120,6 +120,9 @@ handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
 		if new_scroll_pos >= (maxline) {new_scroll_pos = maxline - 1}
 		p.scroll_pos = new_scroll_pos
 		last_quantized_scroll = int(scroll_accum)
+		return true
+	case .MOUSE_BUTTON_DOWN:
+		move_cursor({5,5})
 		return true
 	case .TEXT_INPUT:
 		line_insert_text(e.text.text)
