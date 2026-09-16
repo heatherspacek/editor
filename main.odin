@@ -101,6 +101,7 @@ handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
 		SDL.GetWindowSizeInPixels(ctx.window, &w, &h)
 		application_h = h
 		application_w = w
+		relayout_screen()
 		return true
 	case .DROP_FILE:
 	// :0
