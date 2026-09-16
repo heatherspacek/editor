@@ -49,5 +49,7 @@ move_cursor :: proc(new_pos: [2]int) {
 	target_line_len := p.lines[dest_line].len
 	dest_col := clamp(new_pos[0], 0, target_line_len)
 	p.cursor_pos = {dest_col, dest_line}
-	fmt.println(p.cursor_pos)
+
+	fmt.println(cstring(p.lines[dest_line].sdl_text.text))
+
 }

@@ -11,6 +11,8 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (handled: bo
 	if mod == nil {
 		// no mod pressed-- we should assume 'textinput' captured.
 		#partial switch code {
+		case .HOME:
+			move_cursor({0, get_focused_panel().cursor_pos[1]})
 		case .BACKSPACE:
 			line_backspace()
 		case .RIGHT:

@@ -69,9 +69,18 @@ fontchange_panel :: proc(p: ^Panel, f: ^TTF.Font) {
 
 draw_panel :: proc(p: ^Panel) {
 	r := p.screen_pos
+	w, h: i32
+	TTF.GetTextSize(p._sizing_text, &w, &h)
 
-	new_cr := SDL.Rect{i32(r[0] - 1), i32(r[1] - 1), i32(r[2] + 2), i32(r[3] + 2)}
-	SDL.SetRenderClipRect(ctx.renderer, &new_cr)
+	new_cliprect := SDL.Rect{i32(r[0] - 1), i32(r[1] - 1), i32(r[2] + 2), i32(r[3] + 2)}
+	SDL.SetRenderClipRect(ctx.renderer, &new_cliprect)
+
+	cur_rel_ypos :f32 = f32(p.cursor_pos[1] - p.scroll_pos) * f32(h) + f32(p.screen_pos[1])
+	hilite := SDL.FRect{f32(r[0]), cur_rel_ypos, f32(r[2]), f32(h)}
+	paintwith(col_line_highlight)
+	SDL.RenderFillRect(ctx.renderer, &hilite)
+	paintwith(col_lineactive)
+	SDL.RenderRect(ctx.renderer, &hilite)
 
 	// border.
 	fr := SDL.FRect{f32(r[0]), f32(r[1]), f32(r[2]), f32(r[3])}
@@ -79,8 +88,6 @@ draw_panel :: proc(p: ^Panel) {
 	SDL.RenderRect(ctx.renderer, &fr)
 
 	// determine which sdl_lines are in the drawing region
-	w, h: i32
-	TTF.GetTextSize(p._sizing_text, &w, &h)
 	for i in 0 ..= p._n_vis_lines {
 		TTF.DrawRendererText(
 			p.lines[p.scroll_pos + i].sdl_text,
@@ -94,7 +101,7 @@ draw_panel :: proc(p: ^Panel) {
 	if cursor_onscreen {
 		cur := SDL.FRect {
 			f32(p.cursor_pos[0]) * f32(w) + f32(p.screen_pos[0]),
-			f32(p.cursor_pos[1] - p.scroll_pos) * f32(h) + f32(p.screen_pos[1]),
+			cur_rel_ypos,
 			f32(w),
 			f32(h),
 		}

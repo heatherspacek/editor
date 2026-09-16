@@ -27,6 +27,7 @@ col_nord15 :: colour{180, 142, 173}
 
 col_bg :: col_nord00
 col_lineactive :: col_nord04
+col_line_highlight :: col_nord01
 col_red :: col_nord11
 
 paintwith :: proc(col: colour) {

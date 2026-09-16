@@ -41,7 +41,6 @@ read_file :: proc(fpath: string) -> (lines: ^file_contents, err: os.Error) {
 			fl.len = len_
 			append_elem(lines, fl)
 			last_break = i + 1
-			fmt.println(cs, len_)
 		}
 	}
 	return

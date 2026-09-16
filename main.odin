@@ -105,7 +105,6 @@ handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
 	case .DROP_FILE:
 	// :0
 	case .MOUSE_WHEEL:
-		// fmt.print(e.wheel.integer_y, e.wheel.y, "\n")
 		// TODO: integer_y is crappy because there are tons of "0" events
 		// that don't accumulate properly. COUNT UP SCROLLS WITH THE FLOAT AMOUNT!
 		scroll_accum += e.wheel.y
