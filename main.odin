@@ -4,6 +4,7 @@ package editre
 // import "core:fmt"
 import "core:fmt"
 import "core:log"
+import "core:mem"
 import "core:os"
 // import "core:strings"
 import SDL "vendor:sdl3"
@@ -122,7 +123,7 @@ handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
 		last_quantized_scroll = int(scroll_accum)
 		return true
 	case .MOUSE_BUTTON_DOWN:
-		move_cursor({5,5})
+		move_cursor({5, 5})
 		return true
 	case .TEXT_INPUT:
 		line_insert_text(e.text.text)
@@ -154,7 +155,7 @@ draw :: proc() {
 	SDL.RenderPresent(ctx.renderer)
 }
 
-main :: proc() {
+_main :: proc() {
 	context.logger = log.create_console_logger()
 	if !sdl_init() {
 		log.error("Init failed somewhere. Check logs. Exiting...\n")
@@ -175,4 +176,17 @@ main :: proc() {
 
 	SDL.DestroyWindow(ctx.window)
 	SDL.Quit()
+}
+
+main :: proc() {
+	track: mem.Tracking_Allocator
+	mem.tracking_allocator_init(&track, context.allocator)
+	defer mem.tracking_allocator_destroy(&track)
+	context.allocator = mem.tracking_allocator(&track)
+
+	_main()
+
+	for _, leak in track.allocation_map {
+		fmt.eprintfln("%v leaked %m", leak.location, leak.size)
+	}
 }
