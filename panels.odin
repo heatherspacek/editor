@@ -11,14 +11,14 @@ Panel :: struct {
 	cursor_pos:   [2]int,
 	focused:      bool,
 	font_i:       int,
-	lines:		  ^[dynamic]file_line,
+	lines:        ^[dynamic]file_line,
 	_n_vis_lines: int,
 	_sizing_text: ^TTF.Text,
 	screen_pos:   Rect,
 	scroll_pos:   int,
 }
 
-all_panels : [dynamic]^Panel
+all_panels: [dynamic]^Panel
 
 new_panel :: proc(contents: ^file_contents) -> ^Panel {
 	START_FONT_I := 3
@@ -30,7 +30,12 @@ new_panel :: proc(contents: ^file_contents) -> ^Panel {
 
 	relayout_screen()
 
-	p._sizing_text = TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], "#", 1)
+	p._sizing_text = TTF.CreateText(
+		ctx.text_engine,
+		fonts[START_FONT_I],
+		transmute([^]u8)cstring("#"),
+		1,
+	)
 	p._n_vis_lines = count_vislines_panel(p)
 	p.cursor_pos = {0, 0}
 
@@ -75,7 +80,7 @@ draw_panel :: proc(p: ^Panel) {
 	new_cliprect := SDL.Rect{i32(r[0] - 1), i32(r[1] - 1), i32(r[2] + 2), i32(r[3] + 2)}
 	SDL.SetRenderClipRect(ctx.renderer, &new_cliprect)
 
-	cur_rel_ypos :f32 = f32(p.cursor_pos[1] - p.scroll_pos) * f32(h) + f32(p.screen_pos[1])
+	cur_rel_ypos: f32 = f32(p.cursor_pos[1] - p.scroll_pos) * f32(h) + f32(p.screen_pos[1])
 	hilite := SDL.FRect{f32(r[0]), cur_rel_ypos, f32(r[2]), f32(h)}
 	paintwith(col_line_highlight)
 	SDL.RenderFillRect(ctx.renderer, &hilite)
@@ -110,7 +115,7 @@ draw_panel :: proc(p: ^Panel) {
 		SDL.RenderFillRect(ctx.renderer, &cur)
 
 		// render character on top of the cursor... watch this...
-		curclip := SDL.Rect{i32(cur.x-1), i32(cur.y-1), i32(cur.w+2), i32(cur.h+2)}
+		curclip := SDL.Rect{i32(cur.x - 1), i32(cur.y - 1), i32(cur.w + 2), i32(cur.h + 2)}
 		SDL.SetRenderClipRect(ctx.renderer, &curclip)
 		TTF.SetTextColor(
 			p.lines[p.cursor_pos[1]].sdl_text,

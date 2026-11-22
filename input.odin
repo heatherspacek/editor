@@ -10,7 +10,12 @@ line_insert_text :: proc(text: cstring) {
 	line_i := curr_panel.cursor_pos[1]
 	insert_pos := curr_panel.cursor_pos[0]
 
-	TTF.InsertTextString(curr_panel.lines[line_i].sdl_text, i32(insert_pos), text, len(text))
+	TTF.InsertTextString(
+		curr_panel.lines[line_i].sdl_text,
+		i32(insert_pos),
+		transmute([^]u8)text,
+		len(text),
+	)
 	curr_panel.lines[curr_panel.cursor_pos[1]].len += len(text)
 
 	// todo: put this into some data structure that gives us UNDO!
@@ -24,15 +29,18 @@ line_backspace :: proc() {
 	if cur[0] == 0 {
 		if cur[1] == 0 {return}
 		cs := cstring(panel.lines[cur[1]].sdl_text.text)
-		landing_pos := panel.lines[cur[1]-1].len
+		landing_pos := panel.lines[cur[1] - 1].len
 		adding_len := panel.lines[cur[1]].len
-		TTF.AppendTextString(panel.lines[cur[1]-1].sdl_text, cs, uint(adding_len))
-		panel.lines[cur[1]-1].len += adding_len
+		TTF.AppendTextString(
+			panel.lines[cur[1] - 1].sdl_text,
+			transmute([^]u8)cs,
+			uint(adding_len),
+		)
+		panel.lines[cur[1] - 1].len += adding_len
 		ordered_remove(panel.lines, cur[1])
-		panel.cursor_pos = {landing_pos , cur[1]-1}
-	}
-	else {
-		TTF.DeleteTextString(panel.lines[cur[1]].sdl_text, i32(cur[0]-1), 1)
+		panel.cursor_pos = {landing_pos, cur[1] - 1}
+	} else {
+		TTF.DeleteTextString(panel.lines[cur[1]].sdl_text, i32(cur[0] - 1), 1)
 		panel.lines[cur[1]].len -= 1
 		panel.cursor_pos -= {1, 0}
 	}

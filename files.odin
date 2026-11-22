@@ -10,7 +10,7 @@ import TTF "vendor:sdl3/ttf"
 
 file_line :: struct {
 	sdl_text: ^TTF.Text,
-	len: int,
+	len:      int,
 }
 
 file_contents :: [dynamic]file_line
@@ -37,7 +37,12 @@ read_file :: proc(fpath: string) -> (lines: ^file_contents, err: os.Error) {
 			fl := file_line{}
 			cs := cstring(raw_data(fbytes[last_break:i]))
 			len_ := max(i - last_break, 1)
-			fl.sdl_text = TTF.CreateText(ctx.text_engine, fonts[START_FONT_I], cs, uint(len_))
+			fl.sdl_text = TTF.CreateText(
+				ctx.text_engine,
+				fonts[START_FONT_I],
+				transmute([^]u8)cs,
+				uint(len_),
+			)
 			fl.len = len_
 			append_elem(lines, fl)
 			last_break = i + 1
