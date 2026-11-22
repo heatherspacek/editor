@@ -112,8 +112,8 @@ handle_event :: proc(e: ^SDL.Event) -> (needs_redraw: bool) {
 		// that don't accumulate properly. COUNT UP SCROLLS WITH THE FLOAT AMOUNT!
 		scroll_accum += e.wheel.y
 
-		p := get_focused_panel()
-		if p == nil {return false}
+		p, ok := get_focused_panel()
+		if !ok {return false}
 		if (int(scroll_accum) == last_quantized_scroll) {return false}
 
 		new_scroll_pos := p.scroll_pos - 2 * int(scroll_accum)

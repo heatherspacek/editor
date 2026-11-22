@@ -5,8 +5,8 @@ import "core:strings"
 import TTF "vendor:sdl3/ttf"
 
 line_insert_text :: proc(text: cstring) {
-	curr_panel := get_focused_panel()
-	if curr_panel == nil {return}
+	curr_panel, ok := get_focused_panel()
+	if !ok {return}
 	line_i := curr_panel.cursor_pos[1]
 	insert_pos := curr_panel.cursor_pos[0]
 
@@ -24,7 +24,8 @@ line_insert_text :: proc(text: cstring) {
 }
 
 line_backspace :: proc() {
-	panel := get_focused_panel()
+	panel, ok := get_focused_panel()
+	if !ok {return}
 	cur := panel.cursor_pos
 	if cur[0] == 0 {
 		if cur[1] == 0 {return}
@@ -52,12 +53,14 @@ line_delete_word_back :: proc() {
 
 move_cursor :: proc(new_pos: [2]int) {
 	// bounds checking happens here!
-	p := get_focused_panel()
+	p, ok := get_focused_panel()
+	if !ok {return}
+	if p == nil {fmt.println("no panels!"); return}
 	dest_line := clamp(new_pos[1], 0, len(p.lines))
 	target_line_len := p.lines[dest_line].len
 	dest_col := clamp(new_pos[0], 0, target_line_len)
 	p.cursor_pos = {dest_col, dest_line}
 
-	fmt.println(cstring(p.lines[dest_line].sdl_text.text))
+	fmt.printfln("%q", cstring(p.lines[dest_line].sdl_text.text))
 
 }

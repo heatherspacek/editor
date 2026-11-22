@@ -42,13 +42,13 @@ new_panel :: proc(contents: ^file_contents) -> ^Panel {
 	return p
 }
 
-get_focused_panel :: proc() -> ^Panel {
+get_focused_panel :: proc() -> (^Panel, bool) {
 	for p in all_panels {
 		if p.focused {
-			return p
+			return p, true
 		}
 	}
-	return nil
+	return nil, false
 }
 
 cleanup_panel :: proc(p: ^Panel) {

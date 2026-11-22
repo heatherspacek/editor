@@ -12,20 +12,30 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (handled: bo
 		// no mod pressed-- we should assume 'textinput' captured.
 		#partial switch code {
 		case .HOME:
-			move_cursor({0, get_focused_panel().cursor_pos[1]})
+			fp, ok := get_focused_panel()
+			if !ok {return}
+			move_cursor({0, fp.cursor_pos[1]})
 		case .BACKSPACE:
 			line_backspace()
 		case .RIGHT:
-			current_pos := get_focused_panel().cursor_pos
+			fp, ok := get_focused_panel()
+			if !ok {return}
+			current_pos := fp.cursor_pos
 			move_cursor({current_pos[0] + 1, current_pos[1]})
 		case .LEFT:
-			current_pos := get_focused_panel().cursor_pos
+			fp, ok := get_focused_panel()
+			if !ok {return}
+			current_pos := fp.cursor_pos
 			move_cursor({current_pos[0] - 1, current_pos[1]})
 		case .UP:
-			current_pos := get_focused_panel().cursor_pos
+			fp, ok := get_focused_panel()
+			if !ok {return}
+			current_pos := fp.cursor_pos
 			move_cursor({current_pos[0], current_pos[1] - 1})
 		case .DOWN:
-			current_pos := get_focused_panel().cursor_pos
+			fp, ok := get_focused_panel()
+			if !ok {return}
+			current_pos := fp.cursor_pos
 			move_cursor({current_pos[0], current_pos[1] + 1})
 		}
 		return true
@@ -53,7 +63,8 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (handled: bo
 			return true
 		case .EQUALS:
 			// font size up
-			panel := get_focused_panel()
+			panel, ok := get_focused_panel()
+			if !ok {return}
 			curr_size := panel.font_i
 			if curr_size == N_FONTS_LOADED - 1 {
 				log.warn("tried to increase font size past max")
@@ -64,7 +75,8 @@ dispatch_to_keybind :: proc(mod: SDL.Keymod, code: SDL.Scancode) -> (handled: bo
 			return true
 		case .MINUS:
 			// font size down
-			panel := get_focused_panel()
+			panel, ok := get_focused_panel()
+			if !ok {return}
 			curr_size := panel.font_i
 			if curr_size == 0 {
 				log.warn("tried to decrease font size below min")
