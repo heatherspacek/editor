@@ -156,6 +156,10 @@ draw :: proc() {
 	SDL.RenderPresent(ctx.renderer)
 }
 
+startup :: proc() {
+
+}
+
 _main :: proc() {
 	context.logger = log.create_console_logger()
 	defer log.destroy_console_logger(context.logger)
@@ -163,6 +167,7 @@ _main :: proc() {
 		log.error("Init failed somewhere. Check logs. Exiting...\n")
 		os.exit(1)
 	}
+	startup()
 	for !ctx.should_close {
 		e: SDL.Event
 		if SDL.WaitEventTimeout(&e, 500) {
