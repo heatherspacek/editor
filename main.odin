@@ -30,6 +30,7 @@ sdl_init :: proc() -> bool {
 	if wayland_display, ok := os.lookup_env_alloc("WAYLAND_DISPLAY", context.allocator);
 	   ok && wayland_display != "" {
 		os.set_env("SDL_VIDEODRIVER", "wayland")
+		delete(wayland_display)
 	}
 	SDL.SetHint(SDL.HINT_VIDEO_DOUBLE_BUFFER, cstring("1"))
 	if sdl_res := SDL.Init(SDL.INIT_VIDEO); sdl_res != true {
@@ -157,6 +158,7 @@ draw :: proc() {
 
 _main :: proc() {
 	context.logger = log.create_console_logger()
+	defer log.destroy_console_logger(context.logger)
 	if !sdl_init() {
 		log.error("Init failed somewhere. Check logs. Exiting...\n")
 		os.exit(1)
