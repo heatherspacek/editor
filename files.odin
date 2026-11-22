@@ -35,8 +35,13 @@ read_file :: proc(fpath: string) -> (lines: ^file_contents, err: os.Error) {
 	for b, i in fbytes {
 		if b == '\n' || i == len(fbytes) - 1 {
 			fl := file_line{}
-			cs := cstring(raw_data(fbytes[last_break:i]))
-			len_ := max(i - last_break, 1)
+			len_ := i - last_break
+			cs: cstring
+			if len_ == 0 {
+				cs = ""
+			} else {
+				cs = cstring(raw_data(fbytes[last_break:i]))
+			}
 			fl.sdl_text = TTF.CreateText(
 				ctx.text_engine,
 				fonts[START_FONT_I],
